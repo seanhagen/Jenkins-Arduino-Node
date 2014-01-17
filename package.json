@@ -1,0 +1,11 @@
+{
+    "name": "jenkins-arduino",
+    "version": "0.0.1",
+    "description": "Controls a specially built Arduino to display the status of Jenkins jobs",
+    "author": "sean.hagen@gmail.com",
+    "main": "./get_project_status",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/seanhagen/jenkins-arduino-node.git"
+    }
+}
