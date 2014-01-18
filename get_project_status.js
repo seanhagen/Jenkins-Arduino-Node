@@ -1,6 +1,7 @@
 var project = require('./project').project;
 var manager = require('./manager').manager;
-//var SerialPort = require('serialport').SerialPort;
+
+var SerialPort = require('serialport').SerialPort;
 
 projects = [ 
   'SAPI-PR', 'SAPI-CI', 'SAPI-BUILD', 
@@ -8,7 +9,7 @@ projects = [
   'Channelytics-PR', 'Channelytics-CI', 'Channelytics-BUILD'
 ];
 
-/*
+
 var serialPort = new SerialPort( "/dev/ttyACM0", {}, false );
 console.log( "serial port: ", serialPort );
 
@@ -16,23 +17,24 @@ serialPort.open( function(){
   console.log("serial port opened!");
 
   serialPort.on( "data", function(data){
-    console.log("got data from arduino: ", data );
+    console.log("got data from arduino: ", data.toString() );
   });
 
-  /*
-  var test = function(){
-    console.log("writing 'b' to serial");
-    serialPort.write("b", function(err, results){
-      console.log("err: ", err );
-      console.log("results: ", results );
+  var state = 0;
+
+  var test = function toggleLED(){
+    var write = (state == 0)?"led on":"led off";
+    console.log("writing '"+write+"' to serial");
+    serialPort.write( write, function(err, results){
+      state = (state == 0)?1:0;
     });
-  }
+  };
 
-  setTimeout( test, 1000 );
-   */
-  
-//})
+  setInterval( test, 4000 );
+});
 
+
+/*
 var sapi = new project("SAPI-PR");
 var sapi2 = new project("SAPI-CI");
 
