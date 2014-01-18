@@ -3,17 +3,14 @@ var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
 var project = (function(){
-
   var constructor = function Project(name){
     if ( !(this instanceof Project) ){
       return new Project(name);
     }
 
     var self = this;
-
     var checktime = 1000;
     var url = "http://192.168.0.152:8080/job/"+name+"/api/json";
-
     var status = null;
     var blinking = false;
 
@@ -26,8 +23,7 @@ var project = (function(){
     this.getUrl = function(){ return url; };
 
     this.grabStatus =  function(callback){
-      var self = this;
-      http.get( this.getUrl(), function(res){
+      http.get( self.getUrl(), function(res){
         var body = '';
 
         res.on( 'data', function(chunk){
@@ -43,44 +39,64 @@ var project = (function(){
         });
 
       }).on( 'error', function(e){
-        console.log( "Error getting data for "+ this.getName() + ":", e );
+        console.log( "Error getting data for "+ self.getName() + ":", e );
       });
     };
 
     this.parseStatus = function(string){
-      var data = JSON.parse( string );
+      var data;
+      var color;
+      var flashing = 0;
 
-      switch (data.color){
-      case "blue":
-        status="good";
-        break;
-
-      case "red":
-        status="fail";
-        break;
-
+      try {
+        data = JSON.parse( string );
+      } catch ( e ){
+        console.log( "unable to parse string: ", e );
+        return;
       }
 
+      if ( data === undefined ){
+        return;
+      }
+
+      switch (data.color){
+      case "blue_anime":
+        flashing = 1;
+      case "blue":
+        status=1;
+        break;
+
+      case "red_anime":
+        flashing = 1;
+      case "red":
+        status=2;
+        break;
+
+      case "yellow_anime":
+        flashing = 1;
+      case "yellow":
+        status=3;
+        break;
+      }
+
+      status = {
+        status: status,
+        flashing: flashing
+      };
     };
 
     this.getStatus = function(){
       if ( status === null ){
-        this.grabStatus(function(string){
+        self.grabStatus(function(string){
           self.parseStatus(string);
-          console.log( "(callback)status: ", status );
-        });
-        return;
+        }, self );
+        return undefined;
       }
-
-      console.log( "(immediate)status: ", status );
+      self.grabStatus();
+      return status;
     };
 
-    eventEmitter.on( 'gotStatus', this.parseStatus );
-  };
-
-  constructor.prototype.test = function(){
-    console.log( "name: ", this.getName() );
-    console.log( "checktime: ", this.getTime() );
+    eventEmitter.on( 'gotStatus', self.parseStatus );
   };
 
   return constructor;
